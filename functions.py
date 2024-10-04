@@ -1,3 +1,4 @@
+import numpy as np
 from countneighbors import *
 
 # Function declarations
@@ -14,8 +15,9 @@ def readgrid():
     for i in range(collumnsize):
         collumn = []
         for j in range(rowsize):
-            collumn.append(gamescreen[j+1][i*2+1])
+            collumn.append(int(gamescreen[j+1][i*2+1]))
         grid.append(collumn)
+    grid = np.array(grid)
     return grid, collumnsize, rowsize
 def printgrid(collumnsize, rowsize, grid=""):
     """ Currently having a problem with optimizing the printing of the grid.
@@ -27,7 +29,7 @@ def printgrid(collumnsize, rowsize, grid=""):
         for i in range(collumnsize):
             emptycollumn = []
             for j in range(rowsize):
-                emptycollumn.append("_")
+                emptycollumn.append(0)
             grid.append(emptycollumn)
 
     gamescreenfile = open("gamescreen.txt", "w")
@@ -52,7 +54,7 @@ def step(collumnsize, rowsize, grid, method="neighbor"):
     for i in range(collumnsize):
         emptycollumn = []
         for j in range(rowsize):
-            emptycollumn.append("_")
+            emptycollumn.append(0)
         nextstepgrid.append(emptycollumn)
 
     """ This method calculates the number of neighbors of the alive tiles
@@ -65,7 +67,7 @@ def step(collumnsize, rowsize, grid, method="neighbor"):
         for collumn in range(collumnsize):
             for row in range(rowsize):
                 # Checking only alive cells
-                if grid[collumn][row] == "X":
+                if grid[collumn][row] == 1:
                     # Cell is alive
                     # Counting the number of alive neighbors
                     number_of_neighbors, current_neighbors = countandlistneighbors(collumn, row, collumnsize, rowsize, grid)
@@ -78,7 +80,7 @@ def step(collumnsize, rowsize, grid, method="neighbor"):
                     # If it has two or three alive neighbors, it lives
                     # Else, it dies
                     if number_of_neighbors >= 2 and number_of_neighbors <= 3:
-                        nextstepgrid[collumn][row] = "X"
+                        nextstepgrid[collumn][row] = 1
 
         # Calculating the next state of each tile neighboring an alive tile
         # Going through all neighboring tiles
@@ -87,18 +89,18 @@ def step(collumnsize, rowsize, grid, method="neighbor"):
             number_of_neighbors = countneighbors(neighbors[i][0], neighbors[i][1], collumnsize, rowsize, grid)
 
             # Creating the next step
-            if grid[neighbors[i][0]][neighbors[i][1]] == "X":
+            if grid[neighbors[i][0]][neighbors[i][1]] == 1:
                 # Cell is alive
                 # If it has two or three alive neighbors, it lives
                 # Else, it dies
                 if number_of_neighbors >= 2 and number_of_neighbors <= 3:
-                    nextstepgrid[neighbors[i][0]][neighbors[i][1]] = "X"
+                    nextstepgrid[neighbors[i][0]][neighbors[i][1]] = 1
             else:
                 # Cell is dead
                 # If it has three alive neighbors, it lives
                 # Else, it dies
                 if number_of_neighbors == 3:
-                    nextstepgrid[neighbors[i][0]][neighbors[i][1]] = "X"
+                    nextstepgrid[neighbors[i][0]][neighbors[i][1]] = 1
     
     """ This method calculates the number of neighbors of each tile
     (It is faster for games with grids full of alive cells) """
@@ -111,16 +113,16 @@ def step(collumnsize, rowsize, grid, method="neighbor"):
                 number_of_neighbors = countneighbors(collumn, row, collumnsize, rowsize, grid)[0]
 
                 # Creating the next step
-                if grid[collumn][row] == "X":
+                if grid[collumn][row] == 1:
                     # Cell is alive
                     # If it has two or three alive neighbors, it lives
                     # Else, it dies
                     if number_of_neighbors >= 2 and number_of_neighbors <= 3:
-                        nextstepgrid[collumn][row] = "X"
+                        nextstepgrid[collumn][row] = 1
                 else:
                     # Cell is dead
                     # If it has three alive neighbors, it lives
                     # Else, it dies
                     if number_of_neighbors == 3:
-                        nextstepgrid[collumn][row] = "X"
+                        nextstepgrid[collumn][row] = 1
     return nextstepgrid

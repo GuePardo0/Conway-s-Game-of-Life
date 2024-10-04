@@ -1,6 +1,8 @@
-import time
 import threading
-import copy
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from matplotlib.colors import ListedColormap
 from functions import *
 
 # Main actions
@@ -145,49 +147,54 @@ def settings():
             clear(20)
             print("That is not an option.\n")
 def rungame():
-    global game_is_running
-    def rungamethread():
-        # Read settings
-        settingsfile = open("settings.txt", "r")
-        settings = settingsfile.readlines()
-        settingsfile.close()
-        tickspeed = int(settings[2][11:-1])
+    # Reading settings
+    settingsfile = open("settings.txt", "r")
+    settings = settingsfile.readlines()
+    settingsfile.close()
+    tickspeed = int(settings[2][11:-1])
 
-        grid, collumnsize, rowsize = readgrid()
+    # Reading the initial grid
+    grid, collumnsize, rowsize = readgrid()
 
-        # Running the game indefinitely
-        nextstepgrid = copy.deepcopy(grid)
-        while True:
-            # Setting the new grid to be the last one
-            grid = nextstepgrid
-
-            # Taking a step
-            nextstepgrid = step(collumnsize, rowsize, grid, method="neighbor")
-            
-            # Showing the next step on the gamescreen
-            printgrid(collumnsize, rowsize, nextstepgrid)
-
-            if game_is_running == False:
-                break
-            # Waiting
-            time.sleep(1/tickspeed)
-    game_is_running = True
-    thread = threading.Thread(target=rungamethread)
+    # Running the game and showing it with matplotlib
+    def update(frame):
+        nonlocal grid
+        grid = step(collumnsize, rowsize, grid, method="neighbor")
+        mat.set_data(grid)
+        return [mat]
+    fig, ax = plt.subplots()
+    cmap = ListedColormap(['#F4F4F4', 'black'])  # Adjust colors here as needed
+    mat = ax.matshow(grid, cmap=cmap)
+    plt.axis('off')
+    animation = FuncAnimation(fig, update, frames=1, interval=1000/tickspeed, blit=True)
+    
+    # Waiting for user input to stop the game
+    def stopgame():
+        clear(20)
+        input("Press Enter to stop the game.\n")
+        print("Closing game...")
+        plt.close(fig)
+    thread = threading.Thread(target=stopgame)
     thread.start()
-    clear(20)
-    print("Press Enter to stop the game.")
-    input()
-    game_is_running = False
-    print("Closing game...")
-    time.sleep(1)
+
+    plt.show()
 
 def visualizegrid():
-    gamescreenfile = open("gamescreen.txt", "r")
-    gamescreen = gamescreenfile.readlines()
-    gamescreenfile.close()
+    grid, collumnsize, rowsize = readgrid()
     clear(20)
-    for i in range(len(gamescreen)):
-        print(gamescreen[i][:-1])
+    row=""
+    # First line
+    row+=" _"
+    for i in range(collumnsize-1):
+        row+="__"
+    print(row)
+    # Rest of the lines
+    for j in range(rowsize):
+        row=""
+        for i in range(collumnsize):
+            row+="|%s" % grid[i][j]
+        row+="|"
+        print(row)
     print("")
     input("Press Enter to continue.\n")
 

@@ -1,3 +1,3 @@
 rowdefault: 8
 collumndefault: 10
-tickspeed: 4
+tickspeed: 50
